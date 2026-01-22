@@ -1,57 +1,48 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-int main()
-{
-    // note, we don't have to use .clear() if we have just initialized the set/map
-    unordered_map<string, int> mapper; // mapper.clear();
-    unordered_set<int> used_values;    // used_values.clear();
+int Partition(int A[], int l, int r) {
+  int p = A[l];                                  // p is the pivot
+  int m = l;                                     // S1 and S2 are empty
+  for (int k = l+1; k <= r; ++k) {               // explore unknown region
+    if (A[k] < p) {                              // case 2
+      ++m;
+      swap(A[k], A[m]);
+    } // notice that we do nothing in case 1: a[k] >= p
+  }
+  swap(A[l], A[m]);                              // swap pivot with a[m]
+  return m;                                      // return pivot index
+}
 
-    // suppose we enter these 7 name-score pairs below
-    /*
-    john 78
-    billy 69
-    andy 80
-    steven 77
-    felix 82
-    grace 75
-    martin 81
-    */
-    mapper["john"] = 78;
-    used_values.insert(78);
-    mapper["billy"] = 69;
-    used_values.insert(69);
-    mapper["andy"] = 80;
-    used_values.insert(80);
-    mapper["steven"] = 77;
-    used_values.insert(77);
-    mapper["felix"] = 82;
-    used_values.insert(82);
-    mapper["grace"] = 75;
-    used_values.insert(75);
-    mapper["martin"] = 81;
-    used_values.insert(81);
+int RandPartition(int A[], int l, int r) {
+  int p = l + rand() % (r-l+1);                  // select a random pivot
+  swap(A[l], A[p]);                              // swap A[p] with A[l]
+  return Partition(A, l, r);
+}
 
-    // then the internal content of mapper/used_values are not really known
-    // (implementation dependent)
+int QuickSelect(int A[], int l, int r, int k) {  // expected O(n)
+  if (l == r) return A[l];
+  int q = RandPartition(A, l, r);                // O(n)
+  if (q+1 == k)
+    return A[q];
+  else if (q+1 > k)
+    return QuickSelect(A, l, q-1, k);
+  else
+    return QuickSelect(A, q+1, r, k);
+}
 
-    // iterating through the content of mapper will give a jumbled output
-    // as the keys are hashed into various slots
-    for (auto &[key, value] : mapper) // C++17 style
-        printf("%s %d\n", key.c_str(), value);
+int main() {
+  int A[] = { 2, 8, 7, 1, 5, 4, 6, 3 };          // permutation of [1..8]
 
-    // map can also be used like this
-    printf("steven's score is %d, grace's score is %d\n",
-           mapper["steven"], mapper["grace"]);
-    printf("==================\n");
+  printf("%d\n", QuickSelect(A, 0, 7, 8));       // the output must be 8
+  printf("%d\n", QuickSelect(A, 0, 7, 7));       // the output must be 7
+  printf("%d\n", QuickSelect(A, 0, 7, 6));       // the output must be 6
+  printf("%d\n", QuickSelect(A, 0, 7, 5));       // the output must be 5
+  printf("%d\n", QuickSelect(A, 0, 7, 4));       // the output must be 4
+  printf("%d\n", QuickSelect(A, 0, 7, 3));       // the output must be 3
+  printf("%d\n", QuickSelect(A, 0, 7, 2));       // the output must be 2
+  printf("%d\n", QuickSelect(A, 0, 7, 1));       // the output must be 1
 
-    // there is no lower_bound and upper_bound in an unordered_map
-
-    // O(1) search, found
-    printf("%d\n", *used_values.find(77));
-    // O(1) search, not found
-    if (used_values.find(79) == used_values.end())
-        printf("79 not found\n");
-
-    return 0;
+  // try experimenting with the content of array A to see the behavior of "QuickSelect"
+  return 0;
 }
